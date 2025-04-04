@@ -10,42 +10,71 @@
     <script>
         let angles = [3.6, 30.5, 51.4, 61.1];
         let distances = [38.4, 48.9, 50.0, 45.4];
-        let totalFrames = 50;
-        let currentFrame = 0;
+        let totalFrames = 100;
+        let progress = 0;
         
         function setup() {
             createCanvas(600, 400);
-            frameRate(20);
+            frameRate(30);
         }
 
         function draw() {
-            background(220);
+            background(0); // Fundo preto
+            stroke(255); // Cor branca para linhas e textos
+            fill(255); // Texto branco
             textSize(16);
-            text("Projectile Motion Animation", 180, 20);
-            
+            textAlign(CENTER);
+            text("Projectile Motion Animation", width / 2, 30);
+
             // Configurar eixos
-            stroke(0);
             line(50, 350, 550, 350); // Eixo X
             line(50, 50, 50, 350);   // Eixo Y
 
             // Rótulos dos eixos
-            text("Angle (°)", 280, 380);
-            text("Range (m)", 10, 200);
+            text("Angle (°)", width / 2, 380);
+            text("Range (m)", 20, height / 2);
 
-            // Desenhar os pontos
-            let step = Math.min(currentFrame, angles.length);
-            for (let i = 0; i < step; i++) {
-                let x = map(angles[i], 0, 70, 50, 550);
-                let y = map(distances[i], 0, 60, 350, 50);
-                fill(0, 0, 255);
-                ellipse(x, y, 10, 10);
+            // Criar interpolação para a linha animada
+            let interpX = [];
+            let interpY = [];
+            for (let i = 0; i < totalFrames; i++) {
+                let t = i / totalFrames;
+                let index = t * (angles.length - 1);
+                let lower = Math.floor(index);
+                let upper = Math.ceil(index);
+                let ratio = index - lower;
+
+                let x = lerp(angles[lower], angles[upper], ratio);
+                let y = lerp(distances[lower], distances[upper], ratio);
+                interpX.push(map(x, 0, 70, 50, 550));
+                interpY.push(map(y, 0, 60, 350, 50));
             }
 
-            if (currentFrame < angles.length) {
-                currentFrame++;
+            // Desenhar os pontos de referência com valores numéricos
+            for (let i = 0; i < angles.length; i++) {
+                let x = map(angles[i], 0, 70, 50, 550);
+                let y = map(distances[i], 0, 60, 350, 50);
+                fill(255);
+                ellipse(x, y, 8, 8); // Pontos brancos
+                textSize(12);
+                text(`${angles[i]}°`, x, y - 15); // Mostrar ângulo acima do ponto
+                text(`${distances[i]}m`, x, y + 15); // Mostrar alcance abaixo do ponto
+            }
+
+            // Desenhar a linha animada
+            stroke(255, 255, 0); // Cor neon amarela
+            strokeWeight(3);
+            noFill();
+            beginShape();
+            for (let i = 0; i < progress; i++) {
+                vertex(interpX[i], interpY[i]);
+            }
+            endShape();
+
+            if (progress < totalFrames) {
+                progress++;
             }
         }
     </script>
 </body>
 </html>
-
