@@ -1,1 +1,51 @@
-<h1>Testando GitHub Pages</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Motion Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<body>
+    <script>
+        let angles = [3.6, 30.5, 51.4, 61.1];
+        let distances = [38.4, 48.9, 50.0, 45.4];
+        let totalFrames = 50;
+        let currentFrame = 0;
+        
+        function setup() {
+            createCanvas(600, 400);
+            frameRate(20);
+        }
+
+        function draw() {
+            background(220);
+            textSize(16);
+            text("Projectile Motion Animation", 180, 20);
+            
+            // Configurar eixos
+            stroke(0);
+            line(50, 350, 550, 350); // Eixo X
+            line(50, 50, 50, 350);   // Eixo Y
+
+            // Rótulos dos eixos
+            text("Angle (°)", 280, 380);
+            text("Range (m)", 10, 200);
+
+            // Desenhar os pontos
+            let step = Math.min(currentFrame, angles.length);
+            for (let i = 0; i < step; i++) {
+                let x = map(angles[i], 0, 70, 50, 550);
+                let y = map(distances[i], 0, 60, 350, 50);
+                fill(0, 0, 255);
+                ellipse(x, y, 10, 10);
+            }
+
+            if (currentFrame < angles.length) {
+                currentFrame++;
+            }
+        }
+    </script>
+</body>
+</html>
+
