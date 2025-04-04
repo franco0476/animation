@@ -1,80 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projectile Motion Animation</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-</head>
-<body>
-    <script>
-        let angles = [3.6, 30.5, 51.4, 61.1];
-        let distances = [38.4, 48.9, 50.0, 45.4];
-        let totalFrames = 100;
-        let progress = 0;
-        
-        function setup() {
-            createCanvas(600, 400);
-            frameRate(30);
-        }
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from IPython.display import HTML
+import shutil
 
-        function draw() {
-            background(0); // Fundo preto
-            stroke(255); // Cor branca para linhas e textos
-            fill(255); // Texto branco
-            textSize(16);
-            textAlign(CENTER);
-            text("Projectile Motion Animation", width / 2, 30);
+# Dados da tabela
+angles = [3.6, 30.5, 51.4, 61.1]
+distances = [38.4, 48.9, 50.0, 45.4]
 
-            // Configurar eixos
-            line(50, 350, 550, 350); // Eixo X
-            line(50, 50, 50, 350);   // Eixo Y
+# Criar a figura e os eixos com fundo preto
+fig, ax = plt.subplots()
+fig.patch.set_facecolor('black')  # Fundo da figura preto
+ax.set_facecolor('black')  # Fundo do gráfico preto
 
-            // Rótulos dos eixos
-            text("Angle (°)", width / 2, 380);
-            text("Range (m)", 20, height / 2);
+ax.set_xlim(0, max(angles) + 10)
+ax.set_ylim(0, max(distances) + 10)
+ax.set_xlabel("Angle (°)", fontsize=14, color='white', fontweight='bold')
+ax.set_ylabel("Range (m)", fontsize=14, color='white', fontweight='bold')
+ax.set_title("Projectile Motion Animation", fontsize=16, color='white', fontweight='bold')
 
-            // Criar interpolação para a linha animada
-            let interpX = [];
-            let interpY = [];
-            for (let i = 0; i < totalFrames; i++) {
-                let t = i / totalFrames;
-                let index = t * (angles.length - 1);
-                let lower = Math.floor(index);
-                let upper = Math.ceil(index);
-                let ratio = index - lower;
+# Criar a linha inicial em neon amarelo
+line, = ax.plot([], [], '-', color='#FFFF00', linewidth=2)  # Linha neon amarela
 
-                let x = lerp(angles[lower], angles[upper], ratio);
-                let y = lerp(distances[lower], distances[upper], ratio);
-                interpX.push(map(x, 0, 70, 50, 550));
-                interpY.push(map(y, 0, 60, 350, 50));
-            }
+# Adicionar os valores de ângulo e alcance como texto
+texts = [ax.text(angle, distance, f"({angle}°, {distance}m)", 
+                 fontsize=12, color='white', fontweight='bold', ha='right', va='bottom',
+                 path_effects=[plt.matplotlib.patheffects.withStroke(linewidth=2, foreground='black')])
+         for angle, distance in zip(angles, distances)]
 
-            // Desenhar os pontos de referência com valores numéricos
-            for (let i = 0; i < angles.length; i++) {
-                let x = map(angles[i], 0, 70, 50, 550);
-                let y = map(distances[i], 0, 60, 350, 50);
-                fill(255);
-                ellipse(x, y, 8, 8); // Pontos brancos
-                textSize(12);
-                text(`${angles[i]}°`, x, y - 15); // Mostrar ângulo acima do ponto
-                text(`${distances[i]}m`, x, y + 15); // Mostrar alcance abaixo do ponto
-            }
+# Número total de frames para suavidade
+total_frames = 50  
 
-            // Desenhar a linha animada
-            stroke(255, 255, 0); // Cor neon amarela
-            strokeWeight(3);
-            noFill();
-            beginShape();
-            for (let i = 0; i < progress; i++) {
-                vertex(interpX[i], interpY[i]);
-            }
-            endShape();
+# Criar uma interpolação suave entre os pontos
+x_interp = np.linspace(min(angles), max(angles), total_frames)
+y_interp = np.interp(x_interp, angles, distances)
 
-            if (progress < totalFrames) {
-                progress++;
-            }
-        }
-    </script>
-</body>
-</html>
+# Função de animação
+def update(frame):
+    line.set_data(x_interp[:frame+1], y_interp[:frame+1])
+    return line,
+
+# Criar a animação
+ani = FuncAnimation(fig, update, frames=total_frames, interval=50, repeat=False)
+
+# Salvar a animação em um arquivo HTML
+html_code = ani.to_jshtml()
+with open("animation.html", "w") as f:
+    f.write(html_code)
+
+# Mover para a pasta principal do Google Drive (se estiver usando o Colab)
+shutil.move("animation.html", "/content/animation.html")
+
+# Exibir o link para download do arquivo HTML
+HTML(ani.to_jshtml())
