@@ -4,83 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projectile Motion Animation</title>
-    <style>
-        body {
-            background-color: black;
-            color: white;
-            text-align: center;
-            font-family: Arial, sans-serif;
-        }
-        canvas {
-            border: 1px solid white;
-            display: block;
-            margin: auto;
-        }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 </head>
 <body>
-    <h1>Projectile Motion Animation</h1>
-    <canvas id="graphCanvas" width="600" height="400"></canvas>
     <script>
-        const canvas = document.getElementById("graphCanvas");
-        const ctx = canvas.getContext("2d");
-
-        // Data points
-        const angles = [3.6, 30.5, 51.4, 61.1];
-        const distances = [38.4, 48.9, 50.0, 45.4];
-
-        // Scaling factors
-        const maxX = Math.max(...angles) + 10;
-        const maxY = Math.max(...distances) + 10;
-        const scaleX = canvas.width / maxX;
-        const scaleY = canvas.height / maxY;
-
-        // Draw axes
-        function drawAxes() {
-            ctx.strokeStyle = "white";
-            ctx.lineWidth = 2;
-
-            // X-axis
-            ctx.beginPath();
-            ctx.moveTo(50, canvas.height - 50);
-            ctx.lineTo(canvas.width - 20, canvas.height - 50);
-            ctx.stroke();
-            ctx.fillText("Angle (°)", canvas.width - 80, canvas.height - 30);
-
-            // Y-axis
-            ctx.beginPath();
-            ctx.moveTo(50, 20);
-            ctx.lineTo(50, canvas.height - 50);
-            ctx.stroke();
-            ctx.fillText("Range (m)", 10, 20);
+        let angles = [3.6, 30.5, 51.4, 61.1];
+        let distances = [38.4, 48.9, 50.0, 45.4];
+        let totalFrames = 100;
+        let progress = 0;
+        
+        function setup() {
+            createCanvas(600, 400);
+            frameRate(30);
         }
 
-        // Animate drawing the curve
-        let frame = 0;
-        function animate() {
-            if (frame >= angles.length - 1) return;
+        function draw() {
+            background(0); // Fundo preto
+            stroke(255); // Cor branca para linhas e textos
+            fill(255); // Texto branco
+            textSize(16);
+            textAlign(CENTER);
+            text("Projectile Motion Animation", width / 2, 30);
 
-            ctx.strokeStyle = "#FFFF00"; // Neon yellow
-            ctx.lineWidth = 3;
+            // Configurar eixos
+            line(50, 350, 550, 350); // Eixo X
+            line(50, 50, 50, 350);   // Eixo Y
 
-            ctx.beginPath();
-            ctx.moveTo(50 + angles[frame] * scaleX, canvas.height - 50 - distances[frame] * scaleY);
-            ctx.lineTo(50 + angles[frame + 1] * scaleX, canvas.height - 50 - distances[frame + 1] * scaleY);
-            ctx.stroke();
+            // Rótulos dos eixos
+            text("Angle (°)", width / 2, 380);
+            text("Range (m)", 20, height / 2);
 
-            // Draw data points
-            ctx.fillStyle = "white";
-            ctx.beginPath();
-            ctx.arc(50 + angles[frame] * scaleX, canvas.height - 50 - distances[frame] * scaleY, 5, 0, Math.PI * 2);
-            ctx.fill();
+            // Criar interpolação para a linha animada
+            let interpX = [];
+            let interpY = [];
+            for (let i = 0; i < totalFrames; i++) {
+                let t = i / totalFrames;
+                let index = t * (angles.length - 1);
+                let lower = Math.floor(index);
+                let upper = Math.ceil(index);
+                let ratio = index - lower;
 
-            frame++;
-            setTimeout(animate, 500); // Delay for smooth animation
+                let x = lerp(angles[lower], angles[upper], ratio);
+                let y = lerp(distances[lower], distances[upper], ratio);
+                interpX.push(map(x, 0, 70, 50, 550));
+                interpY.push(map(y, 0, 60, 350, 50));
+            }
+
+            // Desenhar os pontos de referência com valores numéricos
+            for (let i = 0; i < angles.length; i++) {
+                let x = map(angles[i], 0, 70, 50, 550);
+                let y = map(distances[i], 0, 60, 350, 50);
+                fill(255);
+                ellipse(x, y, 8, 8); // Pontos brancos
+                textSize(12);
+                text(`${angles[i]}°`, x, y - 15); // Mostrar ângulo acima do ponto
+                text(`${distances[i]}m`, x, y + 15); // Mostrar alcance abaixo do ponto
+            }
+
+            // Desenhar a linha animada
+            stroke(255, 255, 0); // Cor neon amarela
+            strokeWeight(3);
+            noFill();
+            beginShape();
+            for (let i = 0; i < progress; i++) {
+                vertex(interpX[i], interpY[i]);
+            }
+            endShape();
+
+            if (progress < totalFrames) {
+                progress++;
+            }
         }
-
-        // Initialize and start animation
-        drawAxes();
-        animate();
     </script>
 </body>
 </html>
