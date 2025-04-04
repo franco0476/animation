@@ -5,34 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projectile Motion Animation</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+            border: 2px solid white;
+        }
+    </style>
 </head>
 <body>
+    <h1 style="font-weight: bold; text-shadow: 2px 2px 4px black;">Projectile Motion Animation</h1>
     <script>
         let angles = [3.6, 30.5, 51.4, 61.1];
         let distances = [38.4, 48.9, 50.0, 45.4];
         let totalFrames = 100;
         let progress = 0;
-        
+
         function setup() {
             createCanvas(600, 400);
             frameRate(30);
+            textFont("Arial");
+            textStyle(BOLD);
         }
 
         function draw() {
             background(0); // Fundo preto
-            stroke(255); // Cor branca para linhas e textos
-            fill(255); // Texto branco
-            textSize(16);
-            textAlign(CENTER);
+            stroke(255); // Cor branca para eixos e textos
+
+            // Título dentro do canvas
+            fill(255);
+            textSize(20);
+            textAlign(CENTER, CENTER);
             text("Projectile Motion Animation", width / 2, 30);
 
-            // Configurar eixos
+            // Desenhar eixos
+            strokeWeight(2);
             line(50, 350, 550, 350); // Eixo X
             line(50, 50, 50, 350);   // Eixo Y
 
             // Rótulos dos eixos
+            textSize(16);
             text("Angle (°)", width / 2, 380);
-            text("Range (m)", 20, height / 2);
+            text("Range (m)", 30, height / 2);
 
             // Criar interpolação para a linha animada
             let interpX = [];
@@ -54,11 +74,18 @@
             for (let i = 0; i < angles.length; i++) {
                 let x = map(angles[i], 0, 70, 50, 550);
                 let y = map(distances[i], 0, 60, 350, 50);
+                
                 fill(255);
-                ellipse(x, y, 8, 8); // Pontos brancos
-                textSize(12);
+                stroke(0);
+                strokeWeight(3);
+                textSize(14);
                 text(`${angles[i]}°`, x, y - 15); // Mostrar ângulo acima do ponto
                 text(`${distances[i]}m`, x, y + 15); // Mostrar alcance abaixo do ponto
+
+                strokeWeight(1);
+                fill(255);
+                noStroke();
+                ellipse(x, y, 8, 8); // Pontos brancos
             }
 
             // Desenhar a linha animada
