@@ -1,55 +1,75 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from IPython.display import HTML
-import shutil
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Motion Animation</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+        }
+        canvas {
+            background-color: black;
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Projectile Motion Animation</h1>
+    <canvas id="animationCanvas" width="800" height="400"></canvas>
+    
+    <script>
+        const canvas = document.getElementById("animationCanvas");
+        const ctx = canvas.getContext("2d");
 
-# Dados da tabela
-angles = [3.6, 30.5, 51.4, 61.1]
-distances = [38.4, 48.9, 50.0, 45.4]
+        // Dados dos pontos
+        const angles = [3.6, 30.5, 51.4, 61.1];
+        const distances = [38.4, 48.9, 50.0, 45.4];
 
-# Criar a figura e os eixos com fundo preto
-fig, ax = plt.subplots()
-fig.patch.set_facecolor('black')  # Fundo da figura preto
-ax.set_facecolor('black')  # Fundo do gráfico preto
+        let frame = 0;
+        const totalFrames = 50;
 
-ax.set_xlim(0, max(angles) + 10)
-ax.set_ylim(0, max(distances) + 10)
-ax.set_xlabel("Angle (°)", fontsize=14, color='white', fontweight='bold')
-ax.set_ylabel("Range (m)", fontsize=14, color='white', fontweight='bold')
-ax.set_title("Projectile Motion Animation", fontsize=16, color='white', fontweight='bold')
+        function interpolate(start, end, progress) {
+            return start + (end - start) * progress;
+        }
 
-# Criar a linha inicial em neon amarelo
-line, = ax.plot([], [], '-', color='#FFFF00', linewidth=2)  # Linha neon amarela
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-# Adicionar os valores de ângulo e alcance como texto
-texts = [ax.text(angle, distance, f"({angle}°, {distance}m)", 
-                 fontsize=12, color='white', fontweight='bold', ha='right', va='bottom',
-                 path_effects=[plt.matplotlib.patheffects.withStroke(linewidth=2, foreground='black')])
-         for angle, distance in zip(angles, distances)]
+            // Desenhar os pontos fixos
+            ctx.fillStyle = "white";
+            for (let i = 0; i < angles.length; i++) {
+                let x = angles[i] * 10;
+                let y = canvas.height - distances[i] * 5;
+                ctx.fillText(`(${angles[i]}°, ${distances[i]}m)`, x - 20, y - 10);
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
-# Número total de frames para suavidade
-total_frames = 50  
+            // Desenhar a linha animada
+            ctx.strokeStyle = "yellow";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(angles[0] * 10, canvas.height - distances[0] * 5);
+            for (let i = 1; i < angles.length; i++) {
+                let progress = frame / totalFrames;
+                let x = interpolate(angles[i - 1] * 10, angles[i] * 10, progress);
+                let y = interpolate(canvas.height - distances[i - 1] * 5, canvas.height - distances[i] * 5, progress);
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
 
-# Criar uma interpolação suave entre os pontos
-x_interp = np.linspace(min(angles), max(angles), total_frames)
-y_interp = np.interp(x_interp, angles, distances)
+            if (frame < totalFrames) {
+                frame++;
+                requestAnimationFrame(animate);
+            }
+        }
 
-# Função de animação
-def update(frame):
-    line.set_data(x_interp[:frame+1], y_interp[:frame+1])
-    return line,
-
-# Criar a animação
-ani = FuncAnimation(fig, update, frames=total_frames, interval=50, repeat=False)
-
-# Salvar a animação em um arquivo HTML
-html_code = ani.to_jshtml()
-with open("animation.html", "w") as f:
-    f.write(html_code)
-
-# Mover para a pasta principal do Google Drive (se estiver usando o Colab)
-shutil.move("animation.html", "/content/animation.html")
-
-# Exibir o link para download do arquivo HTML
-HTML(ani.to_jshtml())
+        animate();
+    </script>
+</body>
+</html>
